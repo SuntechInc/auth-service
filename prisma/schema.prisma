@@ -20,10 +20,10 @@ enum UserStatus {
   BLOCKED
   DELETED
 }
-
-enum RoleScope {
-  COMPANY
-  SYSTEM
+model RoleScope {
+  id    String  @id @default(cuid())
+  name  String  @unique
+  roles Role[]
 }
 
 model User {
@@ -32,15 +32,10 @@ model User {
   idCompany String   @map("id_company")
   email     String   @map("email")
   password  String   @map("password")
-
   status    UserStatus @map("status")
-
-
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
-
   roles UserRole[]
-
   @@map("users")
   @@unique([name,email,idCompany])
 }
@@ -50,15 +45,12 @@ model Role {
   idCompany String   @map("id_company")
   name      String   @map("name")
   description String   @map("description")
-
-  scope RoleScope @default(COMPANY) @map("scope")
-
+  scopeId   String
+  scope     RoleScope @relation(fields: [scopeId], references: [id])
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
-
   users UserRole[]
   permissions RolePermission[]
-
   @@map("roles")
   @@unique([name, idCompany])
 }
@@ -66,10 +58,8 @@ model Role {
 model UserRole {
   idUser    String   @map("id_user")
   idRole    String   @map("id_role")
-  
   user User @relation(fields: [idUser], references: [id])
   role Role @relation(fields: [idRole], references: [id])
-
   @@map("user_roles")
   @@id([idUser, idRole])
 }
@@ -80,19 +70,15 @@ model Permission {
   description String?            @map("description")
   createdAt   DateTime           @default(now()) @map("created_at")
   updatedAt   DateTime           @updatedAt @map("updated_at")
-
   roles       RolePermission[]
-
   @@map("permissions")
 }
 
 model RolePermission {
   idRole       String             @map("id_role")
   idPermission String             @map("id_permission")
-
   role         Role               @relation(fields: [idRole], references: [id], onDelete: Cascade)
   permission   Permission         @relation(fields: [idPermission], references: [id], onDelete: Cascade)
-
   @@map("role_permissions")
   @@id([idRole, idPermission])
 }
