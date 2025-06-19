@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -13,72 +7,130 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-
+// ---------- Enums ----------
 enum UserStatus {
   ACTIVE
   INACTIVE
   BLOCKED
   DELETED
 }
+
+enum UserType {
+  GLOBAL_ADMIN
+  COMPANY_ADMIN
+  EMPLOYEE
+}
+
+enum RoleType {
+  GLOBAL
+  COMPANY
+}
+
+// ---------- Models ----------
+
+/// Escopos de domínio (para agrupar permissões por categoria)
 model RoleScope {
-  id    String  @id @default(cuid())
-  name  String  @unique
-  roles Role[]
-}
+  id   String @id @default(cuid())
+  name String @unique
 
-model User {
-  id        String   @id @default(cuid()) @map("id_users")
-  name      String   @map("name")
-  idCompany String   @map("id_company")
-  email     String   @map("email")
-  password  String   @map("password")
-  status    UserStatus @map("status")
+  // Permissões que pertencem a este escopo
+  permissions Permission[]
+
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
-  roles UserRole[]
-  @@map("users")
-  @@unique([name,email,idCompany])
+
+  @@map("role_scopes")
 }
 
-model Role {
-  id        String   @id @default(cuid()) @map("id_roles")
-  idCompany String   @map("id_company")
-  name      String   @map("name")
-  description String   @map("description")
-  scopeId   String
-  scope     RoleScope @relation(fields: [scopeId], references: [id])
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-  users UserRole[]
+/// Nível de acesso customizável pela empresa (ex: Enfermaria)
+model AccessLevel {
+  id          String   @id @default(cuid()) @map("id_access_levels")
+  idCompany   String   @map("id_company")
+  name        String   @map("name")
+  description String?  @map("description")
+  type        RoleType @default(COMPANY) @map("role_type")
+
   permissions RolePermission[]
-  @@map("roles")
+
+  createdAt       DateTime          @default(now()) @map("created_at")
+  updatedAt       DateTime          @updatedAt @map("updated_at")
+  UserAccessLevel UserAccessLevel[]
+
   @@unique([name, idCompany])
+  @@map("access_levels")
 }
 
-model UserRole {
-  idUser    String   @map("id_user")
-  idRole    String   @map("id_role")
-  user User @relation(fields: [idUser], references: [id])
-  role Role @relation(fields: [idRole], references: [id])
-  @@map("user_roles")
-  @@id([idUser, idRole])
+/// Usuário do sistema (global ou de empresa)
+model User {
+  id           String     @id @default(cuid()) @map("id_users")
+  name         String     @map("name")
+  email        String     @map("email")
+  password     String     @map("password")
+  status       UserStatus @default(ACTIVE) @map("status")
+  type         UserType   @default(EMPLOYEE) @map("user_type")
+  idCompany    String?    @map("id_company")
+  idBranch     String?    @map("id_branch")
+  idDepartment String?    @map("id_department")
+
+  accessLevels      UserAccessLevel[]
+  directPermissions UserPermission[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@unique([email, idCompany])
+  @@index([idCompany])
+  @@map("users")
 }
 
+/// Join table: Usuário ↔ Nível de Acesso
+model UserAccessLevel {
+  idUser        String      @map("id_user")
+  idAccessLevel String      @map("id_access_level")
+  user          User        @relation(fields: [idUser], references: [id])
+  level         AccessLevel @relation(fields: [idAccessLevel], references: [id])
+
+  @@id([idUser, idAccessLevel])
+  @@map("user_access_levels")
+}
+
+/// Permissão base (ex: equipment.read)
 model Permission {
-  id          String             @id @default(cuid()) @map("id_permissions")
-  name        String             @unique @map("name")           // ex.: "equipment.read", "document.create"
-  description String?            @map("description")
-  createdAt   DateTime           @default(now()) @map("created_at")
-  updatedAt   DateTime           @updatedAt @map("updated_at")
-  roles       RolePermission[]
+  id          String  @id @default(cuid()) @map("id_permissions")
+  name        String  @unique @map("name")
+  description String? @map("description")
+
+  // Escopo deste permissao
+  scope   RoleScope @relation(fields: [scopeId], references: [id])
+  scopeId String    @map("scope_id")
+
+  roles RolePermission[]
+
+  createdAt      DateTime         @default(now()) @map("created_at")
+  updatedAt      DateTime         @updatedAt @map("updated_at")
+  UserPermission UserPermission[]
+
   @@map("permissions")
 }
 
+/// Join table: Nível de Acesso ↔ Permissão
 model RolePermission {
-  idRole       String             @map("id_role")
-  idPermission String             @map("id_permission")
-  role         Role               @relation(fields: [idRole], references: [id], onDelete: Cascade)
-  permission   Permission         @relation(fields: [idPermission], references: [id], onDelete: Cascade)
+  idLevel      String      @map("id_access_level")
+  idPermission String      @map("id_permission")
+  level        AccessLevel @relation(fields: [idLevel], references: [id], onDelete: Cascade)
+  permission   Permission  @relation(fields: [idPermission], references: [id], onDelete: Cascade)
+
+  @@id([idLevel, idPermission])
   @@map("role_permissions")
-  @@id([idRole, idPermission])
+}
+
+/// Permissão atribuída diretamente ao usuário
+model UserPermission {
+  idUser       String     @map("id_user")
+  idPermission String     @map("id_permission")
+  user         User       @relation(fields: [idUser], references: [id], onDelete: Cascade)
+  permission   Permission @relation(fields: [idPermission], references: [id], onDelete: Cascade)
+
+  @@id([idUser, idPermission])
+  @@map("user_permissions")
 }
