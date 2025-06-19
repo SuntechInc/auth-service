@@ -54,7 +54,7 @@ model AccessLevel {
 
   createdAt       DateTime          @default(now()) @map("created_at")
   updatedAt       DateTime          @updatedAt @map("updated_at")
-  UserAccessLevel UserAccessLevel[]
+  userAccessLevels UserAccessLevel[]
 
   @@unique([name, idCompany])
   @@map("access_levels")
