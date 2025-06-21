@@ -3,6 +3,7 @@ import { UsersController } from './users.controller';
 import { CreateUserUseCase } from '../../../application/users/create-user.use-case';
 import { GetUserUseCase } from '../../../application/users/get-user.use-case';
 import { PrismaUserRepository } from '../../../infrastructure/users/prisma-user.repository';
+import { USER_REPOSITORY } from '../../../domain/users/user.repository';
 import { PrismaModule } from '../../../infrastructure/prisma/prisma.module';
 
 @Module({
@@ -11,7 +12,8 @@ import { PrismaModule } from '../../../infrastructure/prisma/prisma.module';
   providers: [
     CreateUserUseCase,
     GetUserUseCase,
-    { provide: 'UserRepository', useClass: PrismaUserRepository },
+    { provide: USER_REPOSITORY, useClass: PrismaUserRepository },
+
   ],
 })
 export class UsersModule {}
