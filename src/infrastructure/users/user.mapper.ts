@@ -11,7 +11,7 @@ export class UserMapper {
       prisma.email,
       prisma.password,
       prisma.status as UserStatus,
-      prisma.user_type as unknown as UserType,
+      prisma.type as unknown as UserType,
       prisma.createdAt,
       prisma.updatedAt,
     );

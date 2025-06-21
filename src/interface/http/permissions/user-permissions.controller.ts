@@ -28,7 +28,7 @@ export class UserPermissionsController {
   ) {
     const result = await this.add.execute(id, dto.permission);
     if (!result.ok) {
-      return { message: result.error };
+      return { message: (result as { ok: false; error: string }).error };
     }
     return { message: 'ok' };
   }
@@ -41,7 +41,8 @@ export class UserPermissionsController {
   ) {
     const result = await this.remove.execute(id, permission);
     if (!result.ok) {
-      return { message: result.error };
+      return { message: (result as { ok: false; error: string }).error };
     }
+    return { message: 'ok' };
   }
 }

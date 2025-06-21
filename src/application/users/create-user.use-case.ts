@@ -8,7 +8,7 @@ import { UserStatus } from '../../domain/users/user-status.enum';
 import { UserType } from '../../domain/users/user-type.enum';
 import { CreateUserInput } from './create-user.input';
 import { ok, err, Result } from '../../shared/result';
-import * as bcrypt from 'bcrypt';
+import * as bcrypt from 'bcrypt'
 
 @Injectable()
 export class CreateUserUseCase {

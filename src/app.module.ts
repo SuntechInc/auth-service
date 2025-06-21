@@ -5,6 +5,7 @@ import { PrismaModule } from './infrastructure/prisma/prisma.module';
 import { UsersModule } from './interface/http/users/users.module';
 import { PermissionsModule } from './interface/http/permissions/permissions.module';
 import { PinoProvider } from './infrastructure/logger/pino.provider';
+import { AuthModule } from './interface/http/auth/auth.module';
 
 
 @Module({
@@ -19,8 +20,9 @@ import { PinoProvider } from './infrastructure/logger/pino.provider';
     PrismaModule,
     UsersModule,
     PermissionsModule,
+    AuthModule,
   ],
   controllers: [HealthController],
-  providers: [PinoProvider],
+  // providers: [PinoProvider],
 })
 export class AppModule {}

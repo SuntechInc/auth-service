@@ -75,6 +75,10 @@ model User {
   accessLevels      UserAccessLevel[]
   directPermissions UserPermission[]
 
+  // Relações para tokens e sessões
+  refreshTokens RefreshToken[]
+  sessions      UserSession[]
+
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
@@ -133,4 +137,41 @@ model UserPermission {
 
   @@id([idUser, idPermission])
   @@map("user_permissions")
+}
+
+/// Token de refresh para autenticação
+model RefreshToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String   @map("id_user")
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  revoked   Boolean  @default(false) @map("revoked")
+
+  @@map("refresh_tokens")
+}
+
+/// Blacklist de tokens JWT revogados
+model TokenBlacklist {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("token_blacklist")
+}
+
+/// Sessão de login do usuário
+model UserSession {
+  id        String   @id @default(cuid())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String   @map("id_user")
+  ip        String?  @map("ip")
+  userAgent String?  @map("user_agent")
+  createdAt DateTime @default(now()) @map("created_at")
+  expiresAt DateTime @map("expires_at")
+  revoked   Boolean  @default(false) @map("revoked")
+
+  @@map("user_sessions")
 }
