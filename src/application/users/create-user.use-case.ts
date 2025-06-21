@@ -14,6 +14,7 @@ import * as bcrypt from 'bcrypt';
 export class CreateUserUseCase {
   constructor(@Inject(USER_REPOSITORY) private readonly repo: UserRepository) {}
 
+
   async execute(data: CreateUserInput): Promise<Result<User, string>> {
     const hashed = await bcrypt.hash(data.password, 10);
     try {

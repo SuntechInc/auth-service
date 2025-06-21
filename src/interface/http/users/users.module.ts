@@ -13,6 +13,7 @@ import { PrismaModule } from '../../../infrastructure/prisma/prisma.module';
     CreateUserUseCase,
     GetUserUseCase,
     { provide: USER_REPOSITORY, useClass: PrismaUserRepository },
+
   ],
 })
 export class UsersModule {}
