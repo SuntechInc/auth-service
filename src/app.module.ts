@@ -2,6 +2,9 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { HealthController } from './healthz/healthz.controller';
 import { PrismaModule } from './infrastructure/prisma/prisma.module';
+import { UsersModule } from './interface/http/users/users.module';
+import { PermissionsModule } from './interface/http/permissions/permissions.module';
+import { PinoProvider } from './infrastructure/logger/pino.provider';
 
 
 @Module({
@@ -14,8 +17,10 @@ import { PrismaModule } from './infrastructure/prisma/prisma.module';
       ]
     }),
     PrismaModule,
+    UsersModule,
+    PermissionsModule,
   ],
   controllers: [HealthController],
-  providers: [],
+  providers: [PinoProvider],
 })
 export class AppModule {}
