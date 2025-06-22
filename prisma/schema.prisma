@@ -64,21 +64,22 @@ model AccessLevel {
 model User {
   id           String     @id @default(cuid()) @map("id_users")
   name         String     @map("name")
-  email        String     @map("email")
+  email        String     @unique @map("email")
   password     String     @map("password")
   status       UserStatus @default(ACTIVE) @map("status")
   type         UserType   @default(EMPLOYEE) @map("user_type")
   idCompany    String?    @map("id_company")
-  idBranch     String?    @map("id_branch")
-  idDepartment String?    @map("id_department")
 
   accessLevels      UserAccessLevel[]
   directPermissions UserPermission[]
 
+  // Relações para tokens e sessões
+  refreshTokens RefreshToken[]
+  sessions      UserSession[]
+
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  @@unique([email, idCompany])
   @@index([idCompany])
   @@map("users")
 }
@@ -133,4 +134,41 @@ model UserPermission {
 
   @@id([idUser, idPermission])
   @@map("user_permissions")
+}
+
+/// Token de refresh para autenticação
+model RefreshToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String   @map("id_user")
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  revoked   Boolean  @default(false) @map("revoked")
+
+  @@map("refresh_tokens")
+}
+
+/// Blacklist de tokens JWT revogados
+model TokenBlacklist {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("token_blacklist")
+}
+
+/// Sessão de login do usuário
+model UserSession {
+  id        String   @id @default(cuid())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String   @map("id_user")
+  ip        String?  @map("ip")
+  userAgent String?  @map("user_agent")
+  createdAt DateTime @default(now()) @map("created_at")
+  expiresAt DateTime @map("expires_at")
+  revoked   Boolean  @default(false) @map("revoked")
+
+  @@map("user_sessions")
 }
