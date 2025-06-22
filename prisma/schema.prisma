@@ -64,13 +64,11 @@ model AccessLevel {
 model User {
   id           String     @id @default(cuid()) @map("id_users")
   name         String     @map("name")
-  email        String     @map("email")
+  email        String     @unique @map("email")
   password     String     @map("password")
   status       UserStatus @default(ACTIVE) @map("status")
   type         UserType   @default(EMPLOYEE) @map("user_type")
   idCompany    String?    @map("id_company")
-  idBranch     String?    @map("id_branch")
-  idDepartment String?    @map("id_department")
 
   accessLevels      UserAccessLevel[]
   directPermissions UserPermission[]
@@ -82,7 +80,6 @@ model User {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  @@unique([email, idCompany])
   @@index([idCompany])
   @@map("users")
 }

@@ -5,6 +5,7 @@ import { LoginDto } from '../../../src/interface/http/auth/dtos/login.dto';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../../infrastructure/prisma/prisma.service';
 import { randomBytes } from 'crypto';
+import { getAllCompanies } from '../../shared/core-service.client';
 
 @Injectable()
 export class AuthService {
@@ -14,18 +15,29 @@ export class AuthService {
     private readonly prisma: PrismaService,
   ) {}
 
-  async validateUser(email: string, password: string, idCompany: string) {
-    const user = await this.userRepository.findByEmail(email, idCompany);
+  async validateUser(email: string, password: string) {
+    console.log('validateUser - email:', email);
+    const user = await this.userRepository.findByEmail(email);
+    console.log('validateUser - user encontrado:', user);
     if (!user) return null;
     const isPasswordValid = await bcrypt.compare(password, user.password);
+    console.log('validateUser - isPasswordValid:', isPasswordValid);
     if (!isPasswordValid) return null;
     return user;
   }
 
-  async login(dto: LoginDto, idCompany: string) {
-    const user = await this.validateUser(dto.email, dto.password, idCompany);
+  async login(dto: LoginDto) {
+    const user = await this.validateUser(dto.email, dto.password);
     if (!user) throw new UnauthorizedException('Credenciais inválidas');
-    const payload = { sub: user.id, email: user.email, action_companyId: idCompany };
+    let payload: any = { sub: user.id, email: user.email };
+    if (user.type === 'GLOBAL_ADMIN') {
+      const companies = await getAllCompanies();
+      payload = {
+        sub: user.id,
+        email: user.email,
+        companies: companies.map((c: any) => c.id),
+      };
+    }
     const accessToken = await this.jwtService.signAsync(payload);
     const token = randomBytes(32).toString('hex');
     const expiresAt = new Date(Date.now() + 1000 * 60 * 60 * 24 * 7); // 7 dias
@@ -83,5 +95,13 @@ export class AuthService {
       },
     });
     return { message: `Tokens expirados removidos: ${result.count}` };
+  }
+
+  // Métodos utilitários para JWT
+  public decodeJwt(token: string) {
+    return this.jwtService.decode(token);
+  }
+  public async signJwt(payload: any) {
+    return this.jwtService.signAsync(payload);
   }
 } 
