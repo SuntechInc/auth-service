@@ -11,6 +11,7 @@
     
     # copie schema para gerar o client corretamente
     COPY prisma/schema.prisma ./prisma/schema.prisma
+    COPY prisma/migrations ./prisma/migrations
     RUN npx prisma generate --schema=./prisma/schema.prisma
     
     # ---- STAGE 2: Build da aplicação ----
