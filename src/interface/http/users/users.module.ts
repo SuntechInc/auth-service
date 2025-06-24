@@ -5,6 +5,7 @@ import { GetUserUseCase } from '../../../application/users/get-user.use-case';
 import { PrismaUserRepository } from '../../../infrastructure/users/prisma-user.repository';
 import { USER_REPOSITORY } from '../../../domain/users/user.repository';
 import { PrismaModule } from '../../../infrastructure/prisma/prisma.module';
+import { SeedService } from '../../../seed/seed.service';
 
 @Module({
   imports: [PrismaModule],
@@ -13,7 +14,8 @@ import { PrismaModule } from '../../../infrastructure/prisma/prisma.module';
     CreateUserUseCase,
     GetUserUseCase,
     { provide: USER_REPOSITORY, useClass: PrismaUserRepository },
-
+    SeedService,
   ],
+  exports: [{ provide: USER_REPOSITORY, useClass: PrismaUserRepository }],
 })
 export class UsersModule {}
