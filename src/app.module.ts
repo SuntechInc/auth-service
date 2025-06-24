@@ -6,6 +6,7 @@ import { UsersModule } from './interface/http/users/users.module';
 import { PermissionsModule } from './interface/http/permissions/permissions.module';
 import { PinoProvider } from './infrastructure/logger/pino.provider';
 import { AuthModule } from './interface/http/auth/auth.module';
+import { SeedService } from './seed/seed.service';
 
 
 @Module({
@@ -23,6 +24,7 @@ import { AuthModule } from './interface/http/auth/auth.module';
     AuthModule,
   ],
   controllers: [HealthController],
+  providers: [SeedService],
   // providers: [PinoProvider],
 })
 export class AppModule {}
