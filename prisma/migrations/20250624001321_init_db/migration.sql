@@ -39,8 +39,6 @@ CREATE TABLE "users" (
     "status" "UserStatus" NOT NULL DEFAULT 'ACTIVE',
     "user_type" "UserType" NOT NULL DEFAULT 'EMPLOYEE',
     "id_company" TEXT,
-    "id_branch" TEXT,
-    "id_department" TEXT,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
 
@@ -125,10 +123,10 @@ CREATE UNIQUE INDEX "role_scopes_name_key" ON "role_scopes"("name");
 CREATE UNIQUE INDEX "access_levels_name_id_company_key" ON "access_levels"("name", "id_company");
 
 -- CreateIndex
-CREATE INDEX "users_id_company_idx" ON "users"("id_company");
+CREATE UNIQUE INDEX "users_email_key" ON "users"("email");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "users_email_id_company_key" ON "users"("email", "id_company");
+CREATE INDEX "users_id_company_idx" ON "users"("id_company");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "permissions_name_key" ON "permissions"("name");
