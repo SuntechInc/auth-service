@@ -1,4 +1,4 @@
-import { Body, Controller, HttpCode, HttpStatus, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, HttpCode, HttpStatus, Post, UnauthorizedException, UseGuards } from '@nestjs/common';
 import { ZodValidationPipe } from '../../../shared/zod-validation.pipe';
 import { LoginBodySchema, LoginDto, LogoutBodySchema, LogoutDto } from './dtos/login.dto';
 import { AuthService } from '../../../application/auth/auth.service';
@@ -14,7 +14,13 @@ export class AuthController {
   async login(
     @Body(new ZodValidationPipe(LoginBodySchema)) dto: LoginDto,
   ) {
-    return this.authService.login(dto);
+    console.log("Starting login");
+    try {
+      return this.authService.login(dto);
+    } catch (error) {
+      console.error("Error in login", error);
+      throw new UnauthorizedException("Invalid credentials");
+    }
   }
 
   @Post('refresh')

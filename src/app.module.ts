@@ -13,10 +13,8 @@ import { SeedService } from './seed/seed.service';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: [
-        `.env.${process.env.NODE_ENV}`,
-        `.env.local`
-      ]
+      envFilePath: process.env.NODE_ENV === 'local' ? '.env.local' : undefined,
+      ignoreEnvFile: process.env.NODE_ENV === 'production',
     }),
     PrismaModule,
     UsersModule,

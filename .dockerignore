@@ -5,8 +5,8 @@ yarn-debug.log
 yarn-error.log
 
 # Arquivos de ambiente
-.env
-.env.*
+.env*
+
 !.env.example
 
 # Arquivos de build
