@@ -1,6 +1,6 @@
 import { Body, Controller, HttpCode, HttpStatus, Post, UnauthorizedException, UseGuards } from '@nestjs/common';
 import { ZodValidationPipe } from '../../../shared/zod-validation.pipe';
-import { LoginBodySchema, LoginDto, LogoutBodySchema, LogoutDto } from './dtos/login.dto';
+import { LoginBodySchema, LoginDto, LogoutBodySchema, LogoutDto, SwitchCompanyBodySchema, SwitchCompanyDto } from './dtos/login.dto';
 import { AuthService } from '../../../application/auth/auth.service';
 import { RolesGuard } from 'src/application/auth/roles.guard';
 import { Roles } from 'src/shared/roles.decorator';
@@ -44,15 +44,32 @@ export class AuthController {
   @Roles('GLOBAL_ADMIN')
   @Post('switch-company')
   @HttpCode(HttpStatus.OK)
-  async switchCompany(@Body('companyId') companyId: string, @Body('accessToken') accessToken: string) {
+  async switchCompany(
+    @Body(new ZodValidationPipe(SwitchCompanyBodySchema)) dto: SwitchCompanyDto
+  ) {
     // Decodifica o token atual para pegar o payload
-    const payload: any = this.authService.decodeJwt(accessToken);
-    if (!payload || !payload.companies || !payload.companies.includes(companyId)) {
-      return { message: 'Acesso negado para esta empresa.' };
+    const payload: any = this.authService.decodeJwt(dto.accessToken);
+    
+    if (!payload) {
+      throw new UnauthorizedException('Token inválido');
     }
-    // Gera novo JWT com action_companyId
-    const newPayload = { ...payload, action_companyId: companyId };
+    
+    // Verifica se o usuário tem acesso à empresa solicitada
+    if (!payload.companies || !payload.companies.includes(dto.companyId)) {
+      throw new UnauthorizedException('Acesso negado para esta empresa');
+    }
+    
+    // Gera novo JWT com actionCompanyId atualizado
+    const newPayload = { 
+      ...payload, 
+      actionCompanyId: dto.companyId 
+    };
+    
     const newAccessToken = await this.authService.signJwt(newPayload);
-    return { accessToken: newAccessToken };
+    
+    return { 
+      accessToken: newAccessToken,
+      message: `Alterado para empresa: ${dto.companyId}`
+    };
   }
 } 

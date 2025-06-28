@@ -14,6 +14,7 @@ export class UserMapper {
       prisma.type as unknown as UserType,
       prisma.createdAt,
       prisma.updatedAt,
+      prisma.idCompany,
     );
   }
 }

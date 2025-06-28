@@ -16,6 +16,6 @@ async function bootstrap() {
   const NODE_ENV = process.env.NODE_ENV ?? 'undefined';
   await app.listen(process.env.PORT ?? 3334);
   console.log(`➡️  NODE_ENV = ${NODE_ENV}`);
-  console.log('➡️  Auth service is running on port');
+  console.log(`➡️  Auth service is running on ${process.env.PORT ?? 3334}`);
 }
 bootstrap();

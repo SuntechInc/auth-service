@@ -12,4 +12,11 @@ export const LogoutBodySchema = z.object({
   refreshToken: z.string().uuid(),
 });
 
-export type LogoutDto = z.infer<typeof LogoutBodySchema>; 
+export type LogoutDto = z.infer<typeof LogoutBodySchema>;
+
+export const SwitchCompanyBodySchema = z.object({
+  companyId: z.string().uuid(),
+  accessToken: z.string().min(1),
+});
+
+export type SwitchCompanyDto = z.infer<typeof SwitchCompanyBodySchema>; 

@@ -29,15 +29,25 @@ export class AuthService {
   async login(dto: LoginDto) {
     const user = await this.validateUser(dto.email, dto.password);
     if (!user) throw new UnauthorizedException('Credenciais inválidas');
-    let payload: any = { sub: user.id, email: user.email };
+    
+    let payload: any = { 
+      sub: user.id, 
+      email: user.email,
+      companyId: user.companyId,
+      actionCompanyId: user.companyId, // Por padrão, actionCompanyId é igual ao companyId
+    };
+    
     if (user.type === 'GLOBAL_ADMIN') {
       const companies = await getAllCompanies();
       payload = {
         sub: user.id,
         email: user.email,
+        companyId: user.companyId,
+        actionCompanyId: user.companyId,
         companies: companies.map((c: any) => c.id),
       };
     }
+    
     const accessToken = await this.jwtService.signAsync(payload);
     const token = randomBytes(32).toString('hex');
     const expiresAt = new Date(Date.now() + 1000 * 60 * 60 * 24 * 7); // 7 dias
@@ -62,7 +72,14 @@ export class AuthService {
     }
     const user = await this.userRepository.findById(token.userId);
     if (!user) throw new UnauthorizedException('Usuário não encontrado');
-    const payload = { sub: user.id, email: user.email };
+    
+    const payload = { 
+      sub: user.id, 
+      email: user.email,
+      companyId: user.companyId,
+      actionCompanyId: user.companyId,
+    };
+    
     const accessToken = await this.jwtService.signAsync(payload);
     return {
       accessToken,

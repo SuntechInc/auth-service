@@ -41,10 +41,9 @@ export class SeedService implements OnModuleInit {
       UserStatus.ACTIVE,
       UserType.COMPANY_ADMIN,
       new Date(),
-      new Date()
+      new Date(),
+      companyId // Passar o companyId diretamente no construtor
     );
-    // Adiciona companyId como propriedade extra
-    (admin as any).companyId = companyId;
 
     await this.users.create(admin);
 

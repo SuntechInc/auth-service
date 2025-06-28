@@ -11,5 +11,6 @@ export class User {
     public type: UserType,
     public createdAt: Date,
     public updatedAt: Date,
+    public companyId?: string,
   ) {}
 }
