@@ -54,15 +54,11 @@ export class AuthController {
       throw new UnauthorizedException('Token inválido');
     }
     
-    // Verifica se o usuário tem acesso à empresa solicitada
-    if (!payload.companies || !payload.companies.includes(dto.companyId)) {
-      throw new UnauthorizedException('Acesso negado para esta empresa');
-    }
-    
-    // Gera novo JWT com actionCompanyId atualizado
+    // GLOBAL_ADMIN pode acessar qualquer empresa, não precisa validar lista
     const newPayload = { 
       ...payload, 
-      actionCompanyId: dto.companyId 
+      actionCompanyId: dto.companyId,
+      userType: payload.userType, // Manter o tipo do usuário
     };
     
     const newAccessToken = await this.authService.signJwt(newPayload);

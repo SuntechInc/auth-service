@@ -30,23 +30,13 @@ export class AuthService {
     const user = await this.validateUser(dto.email, dto.password);
     if (!user) throw new UnauthorizedException('Credenciais inválidas');
     
-    let payload: any = { 
+    const payload: any = { 
       sub: user.id, 
       email: user.email,
       companyId: user.companyId,
       actionCompanyId: user.companyId, // Por padrão, actionCompanyId é igual ao companyId
+      userType: user.type, // Adicionar o tipo do usuário
     };
-    
-    if (user.type === 'GLOBAL_ADMIN') {
-      const companies = await getAllCompanies();
-      payload = {
-        sub: user.id,
-        email: user.email,
-        companyId: user.companyId,
-        actionCompanyId: user.companyId,
-        companies: companies.map((c: any) => c.id),
-      };
-    }
     
     const accessToken = await this.jwtService.signAsync(payload);
     const token = randomBytes(32).toString('hex');
@@ -78,6 +68,7 @@ export class AuthService {
       email: user.email,
       companyId: user.companyId,
       actionCompanyId: user.companyId,
+      userType: user.type,
     };
     
     const accessToken = await this.jwtService.signAsync(payload);
