@@ -6,6 +6,7 @@ import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../../infrastructure/prisma/prisma.service';
 import { randomBytes } from 'crypto';
 import { getAllCompanies } from '../../shared/core-service.client';
+import { JwtPayload } from './types/jwt-payload.interface';
 
 @Injectable()
 export class AuthService {
@@ -30,7 +31,7 @@ export class AuthService {
     const user = await this.validateUser(dto.email, dto.password);
     if (!user) throw new UnauthorizedException('Credenciais inválidas');
     
-    const payload: any = { 
+    const payload: JwtPayload = { 
       sub: user.id, 
       email: user.email,
       companyId: user.companyId,
@@ -63,7 +64,7 @@ export class AuthService {
     const user = await this.userRepository.findById(token.userId);
     if (!user) throw new UnauthorizedException('Usuário não encontrado');
     
-    const payload = { 
+    const payload: JwtPayload = { 
       sub: user.id, 
       email: user.email,
       companyId: user.companyId,
@@ -106,10 +107,10 @@ export class AuthService {
   }
 
   // Métodos utilitários para JWT
-  public decodeJwt(token: string) {
-    return this.jwtService.decode(token);
+  public decodeJwt(token: string): JwtPayload {
+    return this.jwtService.decode(token) as JwtPayload;
   }
-  public async signJwt(payload: any) {
+  public async signJwt(payload: JwtPayload) {
     return this.jwtService.signAsync(payload);
   }
 } 

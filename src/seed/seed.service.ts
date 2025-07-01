@@ -39,10 +39,10 @@ export class SeedService implements OnModuleInit {
       email,
       hashed,
       UserStatus.ACTIVE,
-      UserType.COMPANY_ADMIN,
+      UserType.GLOBAL_ADMIN,
       new Date(),
       new Date(),
-      companyId // Passar o companyId diretamente no construtor
+      companyId 
     );
 
     await this.users.create(admin);

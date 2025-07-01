@@ -4,6 +4,7 @@ import { LoginBodySchema, LoginDto, LogoutBodySchema, LogoutDto, SwitchCompanyBo
 import { AuthService } from '../../../application/auth/auth.service';
 import { RolesGuard } from 'src/application/auth/roles.guard';
 import { Roles } from 'src/shared/roles.decorator';
+import { JwtPayload } from '../../../application/auth/types/jwt-payload.interface';
 
 @Controller('auth')
 export class AuthController {
@@ -48,14 +49,14 @@ export class AuthController {
     @Body(new ZodValidationPipe(SwitchCompanyBodySchema)) dto: SwitchCompanyDto
   ) {
     // Decodifica o token atual para pegar o payload
-    const payload: any = this.authService.decodeJwt(dto.accessToken);
+    const payload: JwtPayload = this.authService.decodeJwt(dto.accessToken);
     
     if (!payload) {
       throw new UnauthorizedException('Token inválido');
     }
     
     // GLOBAL_ADMIN pode acessar qualquer empresa, não precisa validar lista
-    const newPayload = { 
+    const newPayload: JwtPayload = { 
       ...payload, 
       actionCompanyId: dto.companyId,
       userType: payload.userType, // Manter o tipo do usuário
