@@ -16,37 +16,58 @@ export class SeedService implements OnModuleInit {
 
   async onModuleInit() {
     const companyId = process.env.DEFAULT_COMPANY_ID;
-    const email     = process.env.DEFAULT_ADMIN_EMAIL;
-    const password  = process.env.DEFAULT_ADMIN_PASSWORD;
+    const adminEmail = process.env.DEFAULT_ADMIN_EMAIL;
+    const adminPassword = process.env.DEFAULT_ADMIN_PASSWORD;
+    const userEmail = process.env.DEFAULT_USER_EMAIL;
+    const userPassword = process.env.DEFAULT_USER_PASSWORD;
 
-    if (!companyId || !email || !password) {
+    if (!companyId || !adminEmail || !adminPassword || !userEmail || !userPassword) {
       this.logger.warn('Seeds não configuradas via env, pulando.');
       return;
     }
 
-    // Verifica se já existe
-    const existing = await (this.users as any).findByEmail?.(email);
-    if (existing) {
-      this.logger.log(`Admin '${email}' já existe, nada a fazer.`);
-      return;
+    // Verifica se já existe admin
+    const existingAdmin = await (this.users as any).findByEmail?.(adminEmail);
+    if (existingAdmin) {
+      this.logger.log(`Admin '${adminEmail}' já existe, nada a fazer.`);
+    } else {
+      const adminHashed = await bcrypt.hash(adminPassword, 10);
+      const admin = new User(
+        '', 
+        'Admin',
+        adminEmail,
+        adminHashed,
+        UserStatus.ACTIVE,
+        UserType.GLOBAL_ADMIN,
+        new Date(),
+        new Date(),
+        companyId 
+      );
+
+      await this.users.create(admin);
+      this.logger.log(`Admin '${adminEmail}' criado para companyId=${companyId}.`);
     }
 
-    // Cria o admin
-    const hashed = await bcrypt.hash(password, 10);
-    const admin = new User(
-      '', // id será gerado pelo banco
-      'Admin',
-      email,
-      hashed,
-      UserStatus.ACTIVE,
-      UserType.GLOBAL_ADMIN,
-      new Date(),
-      new Date(),
-      companyId 
-    );
+    
+    const existingUser = await (this.users as any).findByEmail?.(userEmail);
+    if (existingUser) {
+      this.logger.log(`Usuário '${userEmail}' já existe, nada a fazer.`);
+    } else {
+      const userHashed = await bcrypt.hash(userPassword, 10);
+      const user = new User(
+        '', 
+        'Usuário',
+        userEmail,
+        userHashed,
+        UserStatus.ACTIVE,
+        UserType.EMPLOYEE,
+        new Date(),
+        new Date(),
+        companyId 
+      );
 
-    await this.users.create(admin);
-
-    this.logger.log(`Admin '${email}' criado para companyId=${companyId}.`);
+      await this.users.create(user);
+      this.logger.log(`Usuário '${userEmail}' criado para companyId=${companyId}.`);
+    }
   }
 }
